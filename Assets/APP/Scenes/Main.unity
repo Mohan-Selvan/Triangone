@@ -382,12 +382,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   points:
-  - x: 1
-    y: 0
-  - x: 0
-    y: 0.5
-  - x: 2
-    y: 0
+  - _x: -0.5
+    _y: 0
+  - _x: 0
+    _y: 0.5
+  - _x: -0.5
+    _y: 0
   enableContinuousRefresh: 1
   enableGizmos: 1
   lineColor: {r: 0.8455424, g: 0.27735847, b: 1, a: 1}

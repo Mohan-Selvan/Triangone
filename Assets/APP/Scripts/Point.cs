@@ -5,34 +5,34 @@ using UnityEngine;
 [System.Serializable]
 public class Point
 {
-    [SerializeField] float x;
-    [SerializeField] float y;
+    [SerializeField] private float _x;
+    [SerializeField] private float _y;
 
     public Vector2 Position => ToVector2();
 
-    public float X { get => x; }
-    public float Y { get => y; }
+    public float x { get => _x; }
+    public float y { get => _y; }
 
     public Point(float x, float y)
     {
-        this.x = x;
-        this.y = y;
+        this._x = x;
+        this._y = y;
     }
 
     public Point(Vector2 vec)
     {
-        this.x = vec.x;
-        this.y = vec.y;
+        this._x = vec.x;
+        this._y = vec.y;
     }
 
     public void SetPosition(Vector2 vector)
     {
-        this.x = vector.x;
-        this.y = vector.y;
+        this._x = vector.x;
+        this._y = vector.y;
     }
 
     public Vector2 ToVector2()
     {
-        return new Vector2(x, y);
+        return new Vector2(_x, _y);
     }
 }

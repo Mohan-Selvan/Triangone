@@ -48,7 +48,7 @@ public class TriangleDebugger : MonoBehaviour
 
 
         Gizmos.color = circleColor;
-        Vector2 circumCenter = Utils.FindCircumCenter(triangle.A.Position, triangle.B.Position, triangle.C.Position); //triangle.CalculateCircumCenter();
+        Vector2 circumCenter =  triangle.CalculateCircumCenter(); //Utils.FindCircumCenter(triangle.A.Position, triangle.B.Position, triangle.C.Position);
         float circumRadius = Vector2.Distance(circumCenter, triangle.A.Position);
 
         Gizmos.DrawWireSphere(circumCenter, circumRadius);
