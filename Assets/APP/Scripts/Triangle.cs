@@ -28,13 +28,13 @@ public class Triangle
         Vector2 b = B.Position;
         Vector2 c = C.Position;
 
-        Vector2 a_sqr = new Vector2(Mathf.Pow(a.x, 2f), Mathf.Pow(a.y, 2f)); 
-        Vector2 b_sqr = new Vector2(Mathf.Pow(b.x, 2f), Mathf.Pow(b.y, 2f)); 
-        Vector2 c_sqr = new Vector2(Mathf.Pow(c.x, 2f), Mathf.Pow(c.y, 2f));
+        Vector2 SqrA = new Vector2(Mathf.Pow(a.x, 2f), Mathf.Pow(a.y, 2f)); 
+        Vector2 SqrB = new Vector2(Mathf.Pow(b.x, 2f), Mathf.Pow(b.y, 2f)); 
+        Vector2 SqrC = new Vector2(Mathf.Pow(c.x, 2f), Mathf.Pow(c.y, 2f));
 
-        float D = 2f * ((a.x * (b.y - c.y)) + (b.x * (c.y - a.y)) + (c.x * (a.y - b.y)));
-        float x = ((a_sqr.x + a_sqr.y) * (b.y - c.y)) + ((b_sqr.x + b_sqr.y) * (c.y - a.y)) + ((c_sqr.x + c_sqr.y) * (a.y - b.y)) / D;
-        float y = ((a_sqr.x + a_sqr.y) * (c.x - b.x)) + ((b_sqr.x + b_sqr.y) * (a.x - c.x)) + ((c_sqr.x + c_sqr.y) * (b.x - a.x)) / D;
+        float D = ((a.x * (b.y - c.y)) + (b.x * (c.y - a.y)) + (c.x * (a.y - b.y))) * 2f;
+        float x = ((SqrA.x + SqrA.y) * (b.y - c.y)) + ((SqrB.x + SqrB.y) * (c.y - a.y)) + ((SqrC.x + SqrC.y) * (a.y - b.y)) / D;
+        float y = ((SqrA.x + SqrA.y) * (c.x - b.x)) + ((SqrB.x + SqrB.y) * (a.x - c.x)) + ((SqrC.x + SqrC.y) * (b.x - a.x)) / D;
 
         return new Vector2(x, y);
     }
