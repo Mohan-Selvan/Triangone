@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -10,6 +11,7 @@ public class Triangle
     public Point A { get => vertices[0]; }
     public Point B { get => vertices[1]; }
     public Point C { get => vertices[2]; }
+    public Point[] Vertices { get => vertices; private set => vertices = value; }
 
     public Triangle(Point a, Point b, Point c)
     {
@@ -51,12 +53,46 @@ public class Triangle
         return result > 0;
     }
 
-    private void GetBisector(Vector2 pointA, Vector2 pointB)
+    internal List<Edge> GetEdges()
     {
-        Vector2 midPoint = (pointA + pointB) / 2f;
-
-        float slope = (pointB.y - pointA.y) / (pointB.x - pointA.x);
-
-        float perpendicularSlope = -1f / (slope);
+        return new List<Edge>()
+        {
+            new Edge(A, B),
+            new Edge(B, C),
+            new Edge(A, C)
+        };
     }
+
+    internal List<Point> GetPoints()
+    {
+        return new List<Point>()
+        {
+            A, B, C 
+        };
+    }
+
+    #region Helpers
+
+    public bool ContainsPointInCircumCircle(Point point)
+    {
+        float distance = Vector2.Distance(point.Position, CalculateCircumCenter());
+        return  distance < CalculateCircumRadius();
+    }
+
+    public bool ContainsEdge(Edge edge)
+    {
+        int commonPoints = 0;
+
+        foreach (Point point in vertices)
+        {
+            if (point.EqualsPoint(edge.PointA) || point.EqualsPoint(edge.PointB))
+            {
+                commonPoints++;
+            }
+        }
+
+        return (commonPoints >= 2);
+    }
+
+    #endregion
 }

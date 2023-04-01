@@ -7,7 +7,6 @@ public class TriangleDebugger : MonoBehaviour
     [SerializeField] List<Point> points = default;
 
     [Header("Settings")]
-    [SerializeField] bool enableContinuousRefresh = false;
     [SerializeField] bool enableGizmos = false;
 
     [Header("Gizmo Seettings")]

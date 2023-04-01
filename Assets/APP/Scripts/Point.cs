@@ -19,6 +19,12 @@ public class Point
         this._y = y;
     }
 
+    public Point(Point point)
+    {
+        this._x = point.x;
+        this._y = point.y;
+    }
+
     public Point(Vector2 vec)
     {
         this._x = vec.x;
@@ -34,5 +40,10 @@ public class Point
     public Vector2 ToVector2()
     {
         return new Vector2(_x, _y);
+    }
+
+    public bool EqualsPoint(Point other)
+    {
+        return this.x == other.x && this.y == other.y;
     }
 }
