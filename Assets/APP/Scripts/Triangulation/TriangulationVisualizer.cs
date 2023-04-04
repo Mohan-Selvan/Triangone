@@ -4,7 +4,6 @@ using UnityEngine;
 public class TriangulationVisualizer : MonoBehaviour
 {
     [Header("References")]
-    [SerializeField] TriangulationManager triangulator = null;
     [SerializeField] MeshRenderer meshRenderer = default;
 
     [Header("Debug")]
@@ -45,8 +44,8 @@ public class TriangulationVisualizer : MonoBehaviour
         {
             Debug.Log("Triangulating..");
 
-            triangles = triangulator.Triangulate(points);
-            _meshFilter.mesh = triangulator.CreateMeshFromTriangles(triangles);
+            triangles = TriangulationManager.Triangulate(points);
+            _meshFilter.mesh = TriangulationManager.CreateMeshFromTriangles(triangles);
         }
     }
 
@@ -62,7 +61,7 @@ public class TriangulationVisualizer : MonoBehaviour
             Gizmos.DrawWireSphere(point.Position, gizmoSphereRadius);
         }
 
-        PointBounds pointBounds = triangulator.GetPointBounds(points);
+        PointBounds pointBounds = TriangulationManager.GetPointBounds(points);
         Triangle superTriangle = TriangulationManager.GenerateSuperTriangle(pointBounds);
 
         Gizmos.color = superTriangleLineColor;

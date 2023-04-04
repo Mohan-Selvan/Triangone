@@ -71,6 +71,21 @@ public class Triangle
         };
     }
 
+    internal float GetArea()
+    {
+        // (((b - a) X (c - a)).length) / 2f // X => Cross product
+
+        return 0.5f * Vector3.Cross((B.Position - A.Position), (C.Position - A.Position)).magnitude;
+    }
+
+    internal Vector2 GetCentroid()
+    {
+        float x = (A.Position.x + B.Position.x + C.Position.x) / 3f;
+        float y = (A.Position.y + B.Position.y + C.Position.y) / 3f;
+
+        return new Vector2(x, y);
+    }
+
     #region Helpers
 
     public bool ContainsPointInCircumCircle(Point point)

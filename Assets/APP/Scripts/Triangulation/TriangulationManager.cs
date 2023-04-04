@@ -2,9 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class TriangulationManager : MonoBehaviour
+public static class TriangulationManager
 {
-    public List<Triangle> Triangulate(List<Point> points)
+    public static List<Triangle> Triangulate(List<Point> points)
     {
         List<Triangle> triangles = new List<Triangle>();
 
@@ -114,7 +114,7 @@ public class TriangulationManager : MonoBehaviour
         return triangles;
     }
 
-    public PointBounds GetPointBounds(List<Point> points)
+    public static PointBounds GetPointBounds(List<Point> points)
     {
         float minX = Mathf.Infinity;
         float maxX = Mathf.NegativeInfinity;
@@ -134,7 +134,7 @@ public class TriangulationManager : MonoBehaviour
         return new PointBounds(minX, maxX, minY, maxY);
     }
 
-    public Mesh CreateMeshFromTriangles(List<Triangle> trianglesLists)
+    public static Mesh CreateMeshFromTriangles(List<Triangle> trianglesLists)
     {
         Mesh mesh = new Mesh();
 
