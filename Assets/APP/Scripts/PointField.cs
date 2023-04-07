@@ -11,7 +11,7 @@ public class PointField : MonoBehaviour
     [SerializeField] bool continuousRefresh = false;
 
     [Header("Settings")]
-    [SerializeField] int numberOfPoints = 100;
+    [SerializeField] int numberOfPointsToGenerate = 100;
     [SerializeField] float blockScale = 1.0f;
     [SerializeField] Bounds fieldBounds;
 
@@ -70,11 +70,13 @@ public class PointField : MonoBehaviour
 
         blocks.Clear();
 
-        _points = new List<Point>();
+        //_points = new List<Point>();
+        _points = Helpers.GetPointsOnBounds(fieldBounds);
 
         //Creating point field
-        for(int i = 0; i < numberOfPoints; i++)
+        for(int i = 0; i < numberOfPointsToGenerate; i++)
         {
+            //TODO :: Add slight offset here.
             float x = Random.Range(fieldBounds.min.x, fieldBounds.max.x);
             float y = Random.Range(fieldBounds.min.y, fieldBounds.max.y);
 
@@ -128,6 +130,45 @@ public class PointField : MonoBehaviour
             // finally, actually perform the scale/translation
             blocks[i].transform.localScale = targetScale;
             blocks[i].transform.localPosition = FP;
+        }
+    }
+
+    private List<Point> GetPointsOnBounds(Bounds bound)
+    {
+        Vector2 topLeft = bound.center - new Vector3(bound.min.x, bound.max.y, 0f);
+        Vector2 topRight = bound.center - new Vector3(bound.max.x, bound.max.y, 0f);
+        Vector2 bottomLeft = bound.center - new Vector3(bound.min.x, bound.min.y, 0f);
+        Vector2 bottomRight = bound.center - new Vector3(bound.min.x, bound.max.y, 0f);
+
+        List<Point> result = new List<Point>()
+        {
+            new Point(topLeft),
+            new Point(topRight),
+            new Point(bottomLeft),
+            new Point(bottomRight)
+        };
+
+        float intervalNormalized = 0.1f;
+
+        AddPointsBetween(topLeft, topRight, ref result);
+        AddPointsBetween(topRight, bottomRight, ref result);
+        AddPointsBetween(bottomRight, bottomLeft, ref result);
+        AddPointsBetween(bottomLeft, topLeft, ref result);
+
+        return result;
+        
+        void AddPointsBetween(Vector2 a, Vector2 b, ref List<Point> points)
+        {
+            float distance = Vector2.Distance(a, b);
+            Vector2 direction = (b - a).normalized;
+            int intervalDistance = (int)(distance * intervalNormalized);
+            int count = (int)(1f / intervalNormalized);
+
+            for (int i = 1; i < count; i++)
+            {
+                Point p = new Point(a + (direction * (i * intervalDistance)));
+                points.Add(p);
+            }
         }
     }
 

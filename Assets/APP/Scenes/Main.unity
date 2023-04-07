@@ -383,7 +383,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   blockPool: {fileID: 1588138444}
   continuousRefresh: 0
-  numberOfPoints: 20
+  numberOfPointsToGenerate: 20
   blockScale: 0.95
   fieldBounds:
     m_Center: {x: 0, y: 0, z: 0}

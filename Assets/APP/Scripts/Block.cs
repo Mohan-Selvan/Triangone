@@ -1,7 +1,6 @@
-using System.Collections;
-using System.Collections.Generic;
-using TMPro;
 using UnityEngine;
+
+using TMPro;
 
 public class Block : MonoBehaviour
 {
@@ -85,5 +84,10 @@ public class Block : MonoBehaviour
         this.mesh.triangles = triangles;
 
         this.mesh.RecalculateNormals();
+    }
+
+    public void EnableBlock(bool value, bool animate)
+    {
+        
     }
 }
