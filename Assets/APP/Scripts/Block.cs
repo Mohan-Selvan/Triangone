@@ -1,6 +1,9 @@
 using UnityEngine;
 
 using TMPro;
+using Pixelplacement.TweenSystem;
+using Pixelplacement;
+using System;
 
 public class Block : MonoBehaviour
 {
@@ -8,20 +11,25 @@ public class Block : MonoBehaviour
     [SerializeField] Triangle triangle = null;
     [SerializeField] MeshFilter meshFilter = null;
     [SerializeField] Transform containerTransform = null;
+    [SerializeField] PolygonCollider2D polygonCollider = null;
 
     [Header("References - UI")]
     [SerializeField] TMP_Text areaText = null;
 
     [Header("Testing only")]
+    [SerializeField] int blockID = 0;
     [SerializeField] Mesh mesh = null;
     [SerializeField] private MeshRenderer _meshRenderer = null;
+
+    //Properties
+    public int BlockID { get => blockID; set => blockID = value; }
 
     private void Awake()
     {
         _meshRenderer = meshFilter.GetComponent<MeshRenderer>();
     }
 
-    internal void Setup(Triangle _triangle)
+    internal void Setup(int blockID, Triangle _triangle)
     {
         if(mesh == null)
         {
@@ -33,6 +41,7 @@ public class Block : MonoBehaviour
             meshFilter.mesh = this.mesh;
         }
 
+        this.blockID = blockID;
         this.triangle = _triangle;
 
         //Resetting position
@@ -47,8 +56,15 @@ public class Block : MonoBehaviour
 
         UpdateMesh(a, b, c);
 
+        polygonCollider.points = new Vector2[]
+        {
+            a, b, c
+        };
+
         //Updating area to UI.
-        this.areaText.text = $"{triangle.GetArea()}";
+        //this.areaText.text = $"{triangle.GetArea()}";
+
+        containerTransform.gameObject.SetActive(false);
     }
 
     internal void SetScale(float scale)
@@ -84,10 +100,71 @@ public class Block : MonoBehaviour
         this.mesh.triangles = triangles;
 
         this.mesh.RecalculateNormals();
+        this.mesh.RecalculateBounds();
     }
 
-    public void EnableBlock(bool value, bool animate)
+    public void EnableBlock(bool value, bool animate, float delay = 0f)
     {
-        
+        if(animate)
+        {
+            //If animation is required.
+
+            Color currentColor = _meshRenderer.material.color;
+
+            Color fromColor = Utils.GetColorWithAlpha(currentColor, 0.0f);
+            Color toColor = Utils.GetColorWithAlpha(currentColor, 1.0f);
+
+            if (!value)
+            {
+                fromColor = Utils.GetColorWithAlpha(currentColor, 1.0f);
+                toColor = Utils.GetColorWithAlpha(currentColor, 0.0f);
+            }
+
+            TweenBase tween = Tween.ShaderColor(_meshRenderer.material, "_BaseColor", startValue: fromColor,
+                endValue: toColor, 
+                duration: 0.3f,
+                delay: delay, 
+                easeCurve: Tween.EaseInOut,
+                startCallback: () =>
+                {
+                    polygonCollider.enabled = value;
+                    _meshRenderer.material.color = fromColor;
+                    containerTransform.gameObject.SetActive(true);
+                },
+                
+                completeCallback: ()=>
+                {
+                    polygonCollider.enabled = value;
+                    _meshRenderer.material.color = toColor;
+                    containerTransform.gameObject.SetActive(value);
+                });
+        }
+        else
+        {
+            //If animation is not required.
+            _meshRenderer.material.color = Utils.GetColorWithAlpha(_meshRenderer.material.color, 1f);
+            this.containerTransform.gameObject.SetActive(value);
+        }
     }
+
+    public bool IsBlockColliding(LayerMask layerMask)
+    {
+        return polygonCollider.IsTouchingLayers(layerMask);
+    }
+
+    internal void HandleBlockTouchedRing()
+    {
+        Debug.Log($"Removing block : {blockID}");
+        EnableBlock(value: false, animate: true);
+    }
+
+    #region Selection handlers
+
+    public void HandleSelectionStateChanged(bool isSelected)
+    {
+        Color targetColor = isSelected ? GameSettings.Instance.BlockHighlightColor : GameSettings.Instance.BlockDefaultColor;
+        _meshRenderer.material.SetColor("_BaseColor", targetColor);
+    }
+
+    #endregion
 }

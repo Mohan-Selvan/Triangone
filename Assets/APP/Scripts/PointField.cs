@@ -6,6 +6,7 @@ public class PointField : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] BlockObjectPool blockPool = null;
+    [SerializeField] SelectionManager selectionManager = null;
 
     [Header("Debug only")]
     [SerializeField] bool continuousRefresh = false;
@@ -14,6 +15,9 @@ public class PointField : MonoBehaviour
     [SerializeField] int numberOfPointsToGenerate = 100;
     [SerializeField] float blockScale = 1.0f;
     [SerializeField] Bounds fieldBounds;
+
+    [Range(0.1f, 0.9f)]
+    [SerializeField] float boundsInterval = 0.2f;
 
     [Header("Settigs - Input")]
     [SerializeField] KeyCode drawLevelKey = KeyCode.Alpha0;
@@ -71,7 +75,7 @@ public class PointField : MonoBehaviour
         blocks.Clear();
 
         //_points = new List<Point>();
-        _points = Helpers.GetPointsOnBounds(fieldBounds);
+        _points = Helpers.GetPointsOnBounds(fieldBounds, intervalRateNormalized: boundsInterval);
 
         //Creating point field
         for(int i = 0; i < numberOfPointsToGenerate; i++)
@@ -93,7 +97,7 @@ public class PointField : MonoBehaviour
         {
             Block block = blockPool.GetBlock();
 
-            block.Setup(_triangles[i]);
+            block.Setup(blockID: i, _triangles[i]);
 
 
             block.transform.localPosition = _triangles[i].GetCentroid();
@@ -101,6 +105,14 @@ public class PointField : MonoBehaviour
 
             blocks.Add(block);
         }
+
+        for (int i = 0; i < blocks.Count; i++)
+        {
+            blocks[i].EnableBlock(value: true, animate: false, delay: Random.Range(0.1f, 1f));
+        }
+
+        selectionManager.UpdateBlocks(blocks);
+        selectionManager.DeselectAllBlocks();
     }
 
     public void UpdateScale()
@@ -110,29 +122,6 @@ public class PointField : MonoBehaviour
             blocks[i].SetScale(blockScale);
         }
     }
-
-    private void ScaleAroundCentroid()
-    {
-        for (int i = 0; i < blocks.Count; i++)
-        {
-            Vector3 A = blocks[i].transform.position;
-            Vector3 B = _triangles[i].GetCentroid();
-
-            Vector3 C = A - B; // diff from object pivot to desired pivot/origin
-
-            Vector3 targetScale = blockScale * Vector3.one;
-
-            float RS = targetScale.x; //targetScale.x / blocks[i].transform.localScale.x; // relataive scale factor
-
-            // calc final position post-scale
-            Vector3 FP = B + C * RS;
-
-            // finally, actually perform the scale/translation
-            blocks[i].transform.localScale = targetScale;
-            blocks[i].transform.localPosition = FP;
-        }
-    }
-
     private List<Point> GetPointsOnBounds(Bounds bound)
     {
         Vector2 topLeft = bound.center - new Vector3(bound.min.x, bound.max.y, 0f);
@@ -210,6 +199,33 @@ public class PointField : MonoBehaviour
 
         }
     }
+
+    #endregion
+
+    #region Obselete
+
+    private void ScaleAroundCentroid()
+    {
+        for (int i = 0; i < blocks.Count; i++)
+        {
+            Vector3 A = blocks[i].transform.position;
+            Vector3 B = _triangles[i].GetCentroid();
+
+            Vector3 C = A - B; // diff from object pivot to desired pivot/origin
+
+            Vector3 targetScale = blockScale * Vector3.one;
+
+            float RS = targetScale.x; //targetScale.x / blocks[i].transform.localScale.x; // relataive scale factor
+
+            // calc final position post-scale
+            Vector3 FP = B + C * RS;
+
+            // finally, actually perform the scale/translation
+            blocks[i].transform.localScale = targetScale;
+            blocks[i].transform.localPosition = FP;
+        }
+    }
+
 
     #endregion
 }

@@ -17,7 +17,7 @@ public class Tester : MonoBehaviour
 
         Gizmos.color = gizmoColor;
 
-        List<Point> points = Helpers.GetPointsOnBounds(bounds);
+        List<Point> points = Helpers.GetPointsOnBounds(bounds, intervalRateNormalized: 0.2f);
 
         for(int i = 0; i < points.Count; i++)
         {

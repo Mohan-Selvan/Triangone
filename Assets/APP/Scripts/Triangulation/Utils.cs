@@ -101,4 +101,9 @@ public static class Utils
 
         return new Vector2((float)circumcenter[0], (float)circumcenter[1]);
     }
+
+    public static Color GetColorWithAlpha(Color color, float alpha)
+    {
+        return new Color(color.r, color.g, color.b, alpha);
+    }
 }

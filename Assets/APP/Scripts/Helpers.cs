@@ -4,7 +4,7 @@ using UnityEngine;
 
 public static class Helpers
 {
-    public static List<Point> GetPointsOnBounds(Bounds bound)
+    public static List<Point> GetPointsOnBounds(Bounds bound, float intervalRateNormalized)
     {
         Vector2 topLeft = bound.center + new Vector3(-bound.extents.x, bound.extents.y, 0f);
         Vector2 topRight = bound.center + new Vector3(bound.extents.x, bound.extents.y, 0f);
@@ -29,7 +29,7 @@ public static class Helpers
 
         void AddPointsBetween(Vector2 a, Vector2 b, ref List<Point> points)
         {
-            float intervalT = 0.1f;
+            float intervalT = intervalRateNormalized;
             int count = (int)(1f / intervalT);
 
             for (int i = 1; i <= count; i++)
