@@ -53,8 +53,8 @@ public class PointField : MonoBehaviour
     {
         if(Input.GetKeyDown(drawLevelKey))
         {
-            Debug.Log($"{nameof(PointField)} : {nameof(DrawLevel)}");
-            DrawLevel();
+            Debug.Log($"{nameof(PointField)} : {nameof(DrawLevelRoutine)}");
+            StartCoroutine(DrawLevelRoutine());
         }
 
         if (Input.GetKeyDown(updateScaleKey) || continuousRefresh)
@@ -64,7 +64,7 @@ public class PointField : MonoBehaviour
         }
     }
 
-    public void DrawLevel()
+    public IEnumerator DrawLevelRoutine()
     {
         //Returning all existing blocks
         for (int i = 0; i < blocks.Count; i++)
@@ -108,8 +108,10 @@ public class PointField : MonoBehaviour
 
         for (int i = 0; i < blocks.Count; i++)
         {
-            blocks[i].EnableBlock(value: true, animate: false, delay: Random.Range(0.1f, 1f));
+            blocks[i].EnableBlock(value: true, animate: true, delay: Random.Range(0.1f, 1f));
         }
+
+        yield return new WaitForSeconds(1f);
 
         selectionManager.UpdateBlocks(blocks);
         selectionManager.DeselectAllBlocks();
@@ -122,6 +124,7 @@ public class PointField : MonoBehaviour
             blocks[i].SetScale(blockScale);
         }
     }
+
     private List<Point> GetPointsOnBounds(Bounds bound)
     {
         Vector2 topLeft = bound.center - new Vector3(bound.min.x, bound.max.y, 0f);
