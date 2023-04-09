@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class LoadTask
 {
-    public Task Task;
+    public System.Func<Task> TaskProvider;
     public System.Action OnLoadSuccessCallback;
     public System.Action OnLoadFailedCallback;
     public System.Func<float> GetProgressNormalizedFunc;
@@ -14,7 +14,7 @@ public class LoadTask
 
 public class LoadAsyncOperation
 {
-    public AsyncOperation Operation;
+    public System.Func<AsyncOperation> Operation;
     public System.Action OnLoadSuccessCallback;
     public System.Action OnLoadFailedCallback;
 

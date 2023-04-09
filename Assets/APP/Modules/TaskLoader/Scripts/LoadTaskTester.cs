@@ -21,7 +21,7 @@ public class LoadTaskTester : MonoBehaviour
         {
             loader.StartLoadTask(new LoadTask()
             {
-                Task = SimpleAsynchronousTask(),
+                TaskProvider = SimpleAsynchronousTask,
                 GetProgressNormalizedFunc = null,
                 HeadingMessage = "Async success task counting..",
                 OnLoadSuccessCallback = () => { Debug.Log("Async success task complete!"); },
@@ -32,7 +32,7 @@ public class LoadTaskTester : MonoBehaviour
         {
             loader.StartLoadTask(new LoadTask()
             {
-                Task = ProgressAsynchronousTask(),
+                TaskProvider = ProgressAsynchronousTask,
                 GetProgressNormalizedFunc = ()=> { return ((float)counter / 100f); },
                 HeadingMessage = "Async success task counting..",
                 OnLoadSuccessCallback = () => { Debug.Log("Async success task complete!"); },
@@ -81,5 +81,4 @@ public class LoadTaskTester : MonoBehaviour
 
         Debug.Log("Asynchronous task complete");
     }
-
 }

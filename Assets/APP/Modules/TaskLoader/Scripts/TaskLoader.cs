@@ -45,8 +45,15 @@ public class TaskLoader : MonoBehaviour
 
         bool trackProgress = loadTask.GetProgressNormalizedFunc != null;
         float progress = 0f;
+        
+        //TODO :: Animate window here.
 
-        Task task = loadTask.Task;
+        Task task = loadTask.TaskProvider?.Invoke();
+
+        if(task == null) {
+            Debug.LogError("Task not found!");
+            yield break;
+        }
 
         bool run = true;
 
@@ -94,7 +101,9 @@ public class TaskLoader : MonoBehaviour
 
         float progress = 0f;
 
-        AsyncOperation operation = loadTask.Operation;
+        //TODO :: Handle animation here
+
+        AsyncOperation operation = loadTask.Operation();
 
         bool run = true;
 

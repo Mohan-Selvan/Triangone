@@ -150,6 +150,10 @@ PrefabInstance:
       propertyPath: m_AnchorMin.x
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2602050159164957303, guid: a7ac84b94d2f79140b6091a405cf172e, type: 3}
+      propertyPath: m_SortingOrder
+      value: 10
+      objectReference: {fileID: 0}
     - target: {fileID: 2602050159432832445, guid: a7ac84b94d2f79140b6091a405cf172e, type: 3}
       propertyPath: m_Name
       value: TaskLoader

@@ -9,7 +9,7 @@ public class SceneLoader : MonoBehaviour
     {
         taskLoader.StartLoadTask(new LoadAsyncOperation()
         {
-            Operation = LoadSceneAsync(sceneName),
+            Operation = ()=> { return LoadSceneAsync(sceneName); },
             HeadingMessage = "Loading...",
             OnLoadSuccessCallback = () => { Debug.Log("Scene load complete!"); },
             OnLoadFailedCallback = () => { Debug.Log("Scene load failed!"); }
