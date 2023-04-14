@@ -9,14 +9,19 @@ public class SceneLoader : MonoBehaviour
     {
         taskLoader.StartLoadTask(new LoadAsyncOperation()
         {
-            Operation = ()=> { return LoadSceneAsync(sceneName); },
+            Operation = ()=> { return GetSceneLoadOperation(sceneName); },
             HeadingMessage = "Loading...",
             OnLoadSuccessCallback = () => { Debug.Log("Scene load complete!"); },
             OnLoadFailedCallback = () => { Debug.Log("Scene load failed!"); }
         });
     }
 
-    private AsyncOperation LoadSceneAsync(string sceneName)
+    public void TryLoadScene(LoadAsyncOperation loadSceneOperation)
+    {
+        taskLoader.StartLoadTask(loadSceneOperation);
+    }
+
+    public AsyncOperation GetSceneLoadOperation(string sceneName)
     {
         return SceneManager.LoadSceneAsync(sceneName);
     }

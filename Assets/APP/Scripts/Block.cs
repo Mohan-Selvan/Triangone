@@ -64,6 +64,8 @@ public class Block : MonoBehaviour
         //Updating area to UI.
         //this.areaText.text = $"{triangle.GetArea()}";
 
+        _meshRenderer.material.SetColor("_BaseColor", GameSettings.Instance.BlockDefaultColor);
+
         containerTransform.gameObject.SetActive(false);
     }
 
@@ -122,7 +124,7 @@ public class Block : MonoBehaviour
 
             TweenBase tween = Tween.ShaderColor(_meshRenderer.material, "_BaseColor", startValue: fromColor,
                 endValue: toColor, 
-                duration: 0.3f,
+                duration: 0.15f,
                 delay: delay, 
                 easeCurve: Tween.EaseInOut,
                 startCallback: () =>
@@ -134,9 +136,17 @@ public class Block : MonoBehaviour
                 
                 completeCallback: ()=>
                 {
-                    polygonCollider.enabled = value;
-                    _meshRenderer.material.color = toColor;
-                    containerTransform.gameObject.SetActive(value);
+                    try
+                    {
+                        polygonCollider.enabled = value;
+                        _meshRenderer.material.color = toColor;
+                        containerTransform.gameObject.SetActive(value);
+                    }
+                    catch(Exception e)
+                    {
+                        Debug.LogError($"Exception on tween callback : {e}");
+                    }
+
                 });
         }
         else

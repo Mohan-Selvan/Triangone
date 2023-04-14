@@ -82,10 +82,23 @@ public class SelectionManager : MonoBehaviour
             {
                 Block b = currentSelectedBlock;
                 DeselectCurrentBlock();
-                b.HandleBlockTouchedRing();
+                HandleBlockTouchedRing(b);
                 return;
             }
         }
+    }
+
+    private void HandleBlockTouchedRing(Block block)
+    {
+        block.HandleBlockTouchedRing();
+
+        blocksMap.Remove(block.BlockID);
+
+        if(blocksMap.Count == 0)
+        {
+            GameWorld.Instance.GameManager.HandleLevelComplete();
+        }
+
     }
 
     private Vector3 GetWorldMousePosition(Vector2 inputMousePosition)
@@ -106,6 +119,8 @@ public class SelectionManager : MonoBehaviour
             return x.BlockID;
         });
     }
+
+    #region Selection
 
     public bool TrySelectBlock(int blockID)
     {
@@ -144,4 +159,6 @@ public class SelectionManager : MonoBehaviour
             kvp.Value.HandleSelectionStateChanged(isSelected: false);
         }
     }
+
+    #endregion
 }

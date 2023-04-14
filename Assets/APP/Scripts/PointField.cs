@@ -53,8 +53,8 @@ public class PointField : MonoBehaviour
     {
         if(Input.GetKeyDown(drawLevelKey))
         {
-            Debug.Log($"{nameof(PointField)} : {nameof(DrawLevelRoutine)}");
-            StartCoroutine(DrawLevelRoutine());
+            Debug.Log($"{nameof(PointField)} : {nameof(DrawLevel_Routine)}");
+            StartCoroutine(DrawLevel_Routine());
         }
 
         if (Input.GetKeyDown(updateScaleKey) || continuousRefresh)
@@ -64,7 +64,7 @@ public class PointField : MonoBehaviour
         }
     }
 
-    public IEnumerator DrawLevelRoutine()
+    public IEnumerator DrawLevel_Routine()
     {
         //Returning all existing blocks
         for (int i = 0; i < blocks.Count; i++)
@@ -111,7 +111,7 @@ public class PointField : MonoBehaviour
             blocks[i].EnableBlock(value: true, animate: true, delay: Random.Range(0.1f, 1f));
         }
 
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(2f);
 
         selectionManager.UpdateBlocks(blocks);
         selectionManager.DeselectAllBlocks();

@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -13,7 +11,21 @@ public class HomePageUI : MonoBehaviour
         playButton.onClick.AddListener(() =>
         {
             Debug.Log("Loading Main scene");
-            GameWorld.Instance.SceneLoader.TryLoadScene("Main");
+
+            GameWorld gameWorld = GameWorld.Instance;
+
+            string sceneName = Constants.SCENE_GAME;
+
+            GameWorld.Instance.TaskLoader.StartLoadTask(new LoadAsyncOperation()
+            {
+                Operation = () => { return gameWorld.SceneLoader.GetSceneLoadOperation(sceneName); },
+                HeadingMessage = "Loading...",
+                OnLoadFailedCallback = () => { Debug.Log("Scene load failed!"); },
+                OnLoadSuccessCallback = () => { 
+                    Debug.Log("Scene load complete!");
+                    gameWorld.GameManager.StartGame();
+                }
+            });
         });
     }
 }
