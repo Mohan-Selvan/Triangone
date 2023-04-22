@@ -8,6 +8,7 @@ using System;
 public class Block : MonoBehaviour
 {
     [Header("References")]
+    [SerializeField] Rigidbody2D rb = null;
     [SerializeField] Triangle triangle = null;
     [SerializeField] MeshFilter meshFilter = null;
     [SerializeField] Transform containerTransform = null;
@@ -40,6 +41,10 @@ public class Block : MonoBehaviour
             //Applying mesh
             meshFilter.mesh = this.mesh;
         }
+
+        this.rb.velocity = Vector2.zero;
+        this.rb.constraints = RigidbodyConstraints2D.FreezeAll;
+        this.rb.bodyType = RigidbodyType2D.Kinematic;
 
         this.blockID = blockID;
         this.triangle = _triangle;
@@ -157,9 +162,14 @@ public class Block : MonoBehaviour
         }
     }
 
-    public bool IsBlockColliding(LayerMask layerMask)
+    public int IsBlockColliding(LayerMask layerMask, ref Collider2D[] result)
     {
-        return polygonCollider.IsTouchingLayers(layerMask);
+        ContactFilter2D contactFilter = new ContactFilter2D();
+        contactFilter.SetLayerMask(layerMask);
+        contactFilter.useLayerMask = true;
+
+        int collisions = polygonCollider.OverlapCollider(contactFilter, result);
+        return (collisions);
     }
 
     internal void HandleBlockTouchedRing()
@@ -177,4 +187,9 @@ public class Block : MonoBehaviour
     }
 
     #endregion
+
+    public Rigidbody2D GetRigidBody()
+    {
+        return rb;
+    }
 }

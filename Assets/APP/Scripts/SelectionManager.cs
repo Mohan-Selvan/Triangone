@@ -6,8 +6,14 @@ using System.Linq;
 
 public class SelectionManager : MonoBehaviour
 {
+    [Header("References")]
+    [SerializeField] RingHandler ringHandler = null;
 
-    Dictionary<int, Block> blocksMap = null;
+    [Header("Settings")]
+    [SerializeField] Vector2 knockForceRange = Vector2.up;
+
+    [Header("Debug only")]
+    [SerializeField] bool enableUpdate = true;
 
     [Header("Testing only")]
     [SerializeField] Block currentSelectedBlock = null;
@@ -15,16 +21,47 @@ public class SelectionManager : MonoBehaviour
 
     private Camera mainCamera = null;
 
+    //Trackers
+    Collider2D[] colliders = default;
+
+    //Collections
+    Dictionary<int, Block> blocksMap = null;
+
+    //Helpers
+    GameManager gameManager => GameWorld.Instance.GameManager;
+
     private void Start()
     {
         mainCamera = Camera.main;
 
+        colliders = new Collider2D[5];
         blocksMap = new Dictionary<int, Block>();
+
+        gameManager.OnGameStateChanged += GameManager_OnGameStateChanged;
     }
 
+    private void OnDestroy()
+    {
+        gameManager.OnGameStateChanged -= GameManager_OnGameStateChanged;
+    }
+
+    private void GameManager_OnGameStateChanged(GameState newState)
+    {
+        if(newState == GameState.RUNNING)
+        {
+            enableUpdate = true;
+        }
+
+        if(newState == GameState.PAUSED || newState == GameState.ENDING)
+        {
+            DeselectCurrentBlock();
+        }
+    }
 
     private void Update()
     {
+        if((!enableUpdate) || (gameManager.CurrentGameState != GameState.RUNNING)) { return; }
+
         if(Input.GetMouseButtonDown(0))
         {
             Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
@@ -43,7 +80,7 @@ public class SelectionManager : MonoBehaviour
 
                     if(TrySelectBlock(block.BlockID))
                     {
-                        offset = GetWorldMousePosition(Input.mousePosition) - currentSelectedBlock.transform.position;
+                        offset = Helpers.GetWorldMousePosition(Input.mousePosition, mainCamera) - currentSelectedBlock.transform.position;
                     }
                 }
                 else
@@ -61,7 +98,7 @@ public class SelectionManager : MonoBehaviour
         {
             if(currentSelectedBlock != null)
             {
-                Vector3 worldMousePosition = GetWorldMousePosition(Input.mousePosition);
+                Vector3 worldMousePosition = Helpers.GetWorldMousePosition(Input.mousePosition, mainCamera);
 
                 currentSelectedBlock.transform.position = worldMousePosition - offset;
             }
@@ -69,23 +106,50 @@ public class SelectionManager : MonoBehaviour
 
         if(currentSelectedBlock != null)
         {
-            bool isBlockColliding = currentSelectedBlock.IsBlockColliding(GameSettings.Instance.BlockLayerMask);
+            int blockCollisionCount = currentSelectedBlock.IsBlockColliding(GameSettings.Instance.BlockLayerMask, ref this.colliders);
 
-            if (isBlockColliding)
+            if (blockCollisionCount > 0)
             {
-                Debug.LogError("Game over!!");
-            }
-
-            bool isRingColliding = currentSelectedBlock.IsBlockColliding(GameSettings.Instance.RingLayerMask);
-
-            if (isRingColliding)
-            {
+                // Game over
                 Block b = currentSelectedBlock;
                 DeselectCurrentBlock();
-                HandleBlockTouchedRing(b);
+                HandleGameOver(b);
+
                 return;
             }
+
+            int ringCollisionCount  = currentSelectedBlock.IsBlockColliding(GameSettings.Instance.RingLayerMask, ref this.colliders);
+
+            for(int i = 0; i < ringCollisionCount; i++)
+            {
+                if(colliders[i].TryGetComponent<Wall>(out Wall wall))
+                {
+                    if (wall.IsSafe)
+                    {
+                        Block b = currentSelectedBlock;
+                        DeselectCurrentBlock();
+                        HandleBlockTouchedRing(b);
+                    }
+                    else
+                    {
+                        // Game over
+                        Block b = currentSelectedBlock;
+                        DeselectCurrentBlock();
+                        HandleGameOver(b);
+
+                        return;
+                    }
+                }
+            }
         }
+    }
+
+    public void Initialize(List<Block> blocks)
+    {
+        blocksMap = blocks.ToDictionary((x) =>
+        {
+            return x.BlockID;
+        });
     }
 
     private void HandleBlockTouchedRing(Block block)
@@ -99,25 +163,41 @@ public class SelectionManager : MonoBehaviour
             GameWorld.Instance.GameManager.HandleLevelComplete();
         }
 
+        ringHandler.RandomizeWallSafeStates(numberOfUnsafeWalls: (ringHandler.WallCount / 2));
     }
 
-    private Vector3 GetWorldMousePosition(Vector2 inputMousePosition)
+    private void HandleGameOver(Block currentBlock)
     {
-        Vector3 mousePosition = inputMousePosition;
-        mousePosition.z = -10f;
+        //Game over
+        Debug.LogError("Game over!!");
 
-        Vector3 worldPosition = mainCamera.ScreenToWorldPoint(mousePosition);
-        worldPosition.z = 0f;
+        enableUpdate = false;
 
-        return worldPosition;
-    }
-
-    public void UpdateBlocks(List<Block> blocks)
-    {
-        blocksMap = blocks.ToDictionary((x) =>
+        foreach(Block b in blocksMap.Values)
         {
-            return x.BlockID;
-        });
+            if(b == currentBlock) { continue; }
+
+            //Calculating knock range
+            float maxDistance = 10f;
+
+            Vector2 direction = (b.transform.position - currentBlock.transform.position).normalized;
+            float distance = Mathf.Clamp(Vector2.Distance(b.transform.position, currentBlock.transform.position), 0f, maxDistance);
+
+            float t = Mathf.InverseLerp(0, maxDistance, distance);
+            float knockMagnitude = Mathf.Lerp(knockForceRange.x, knockForceRange.y, 1f - t);
+
+            Rigidbody2D rb = b.GetRigidBody();
+
+            //Unlocking rigidbody
+            rb.velocity = Vector2.zero;
+            rb.constraints = RigidbodyConstraints2D.FreezeRotation;
+            rb.bodyType = RigidbodyType2D.Dynamic;
+
+            rb.AddForce(direction * knockMagnitude);
+        }
+
+        //Ending game
+        gameManager.EndGame();
     }
 
     #region Selection

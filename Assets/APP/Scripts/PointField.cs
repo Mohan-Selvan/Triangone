@@ -8,9 +8,6 @@ public class PointField : MonoBehaviour
     [SerializeField] BlockObjectPool blockPool = null;
     [SerializeField] SelectionManager selectionManager = null;
 
-    [Header("Debug only")]
-    [SerializeField] bool continuousRefresh = false;
-
     [Header("Settings")]
     [SerializeField] int numberOfPointsToGenerate = 100;
     [SerializeField] float blockScale = 1.0f;
@@ -18,10 +15,6 @@ public class PointField : MonoBehaviour
 
     [Range(0.1f, 0.9f)]
     [SerializeField] float boundsInterval = 0.2f;
-
-    [Header("Settigs - Input")]
-    [SerializeField] KeyCode drawLevelKey = KeyCode.Alpha0;
-    [SerializeField] KeyCode updateScaleKey = KeyCode.Alpha9;
 
     [Header("Settigs - Gizmos")]
     [SerializeField] Color gizmo_BoundsColor = Color.green;
@@ -49,21 +42,6 @@ public class PointField : MonoBehaviour
         blocks = new List<Block>();
     }
 
-    private void Update()
-    {
-        if(Input.GetKeyDown(drawLevelKey))
-        {
-            Debug.Log($"{nameof(PointField)} : {nameof(DrawLevel_Routine)}");
-            StartCoroutine(DrawLevel_Routine());
-        }
-
-        if (Input.GetKeyDown(updateScaleKey) || continuousRefresh)
-        {
-            Debug.Log($"{nameof(PointField)} : {nameof(UpdateScale)}");
-            UpdateScale();
-        }
-    }
-
     public IEnumerator DrawLevel_Routine()
     {
         //Returning all existing blocks
@@ -80,9 +58,12 @@ public class PointField : MonoBehaviour
         //Creating point field
         for(int i = 0; i < numberOfPointsToGenerate; i++)
         {
+            float xDistance = fieldBounds.max.x - fieldBounds.min.x;
+            float yDistance = fieldBounds.max.y - fieldBounds.min.y;
+
             //TODO :: Add slight offset here.
-            float x = Random.Range(fieldBounds.min.x, fieldBounds.max.x);
-            float y = Random.Range(fieldBounds.min.y, fieldBounds.max.y);
+            float x = Random.Range(fieldBounds.min.x + (xDistance * boundsInterval), fieldBounds.max.x - (xDistance * boundsInterval));
+            float y = Random.Range(fieldBounds.min.y + (yDistance * boundsInterval), fieldBounds.max.y - (yDistance * boundsInterval));
 
             Point point = new Point(x, y);
 
@@ -99,7 +80,6 @@ public class PointField : MonoBehaviour
 
             block.Setup(blockID: i, _triangles[i]);
 
-
             block.transform.localPosition = _triangles[i].GetCentroid();
             block.SetScale(blockScale);
 
@@ -113,7 +93,7 @@ public class PointField : MonoBehaviour
 
         yield return new WaitForSeconds(2f);
 
-        selectionManager.UpdateBlocks(blocks);
+        selectionManager.Initialize(blocks);
         selectionManager.DeselectAllBlocks();
     }
 
@@ -122,45 +102,6 @@ public class PointField : MonoBehaviour
         for (int i = 0; i < blocks.Count; i++)
         {
             blocks[i].SetScale(blockScale);
-        }
-    }
-
-    private List<Point> GetPointsOnBounds(Bounds bound)
-    {
-        Vector2 topLeft = bound.center - new Vector3(bound.min.x, bound.max.y, 0f);
-        Vector2 topRight = bound.center - new Vector3(bound.max.x, bound.max.y, 0f);
-        Vector2 bottomLeft = bound.center - new Vector3(bound.min.x, bound.min.y, 0f);
-        Vector2 bottomRight = bound.center - new Vector3(bound.min.x, bound.max.y, 0f);
-
-        List<Point> result = new List<Point>()
-        {
-            new Point(topLeft),
-            new Point(topRight),
-            new Point(bottomLeft),
-            new Point(bottomRight)
-        };
-
-        float intervalNormalized = 0.1f;
-
-        AddPointsBetween(topLeft, topRight, ref result);
-        AddPointsBetween(topRight, bottomRight, ref result);
-        AddPointsBetween(bottomRight, bottomLeft, ref result);
-        AddPointsBetween(bottomLeft, topLeft, ref result);
-
-        return result;
-        
-        void AddPointsBetween(Vector2 a, Vector2 b, ref List<Point> points)
-        {
-            float distance = Vector2.Distance(a, b);
-            Vector2 direction = (b - a).normalized;
-            int intervalDistance = (int)(distance * intervalNormalized);
-            int count = (int)(1f / intervalNormalized);
-
-            for (int i = 1; i < count; i++)
-            {
-                Point p = new Point(a + (direction * (i * intervalDistance)));
-                points.Add(p);
-            }
         }
     }
 

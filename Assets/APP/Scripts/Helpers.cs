@@ -4,6 +4,17 @@ using UnityEngine;
 
 public static class Helpers
 {
+    public static Vector3 GetWorldMousePosition(Vector2 inputMousePosition, Camera camera)
+    {
+        Vector3 mousePosition = inputMousePosition;
+        mousePosition.z = -10f;
+
+        Vector3 worldPosition = camera.ScreenToWorldPoint(mousePosition);
+        worldPosition.z = 0f;
+
+        return worldPosition;
+    }
+
     public static List<Point> GetPointsOnBounds(Bounds bound, float intervalRateNormalized)
     {
         Vector2 topLeft = bound.center + new Vector3(-bound.extents.x, bound.extents.y, 0f);

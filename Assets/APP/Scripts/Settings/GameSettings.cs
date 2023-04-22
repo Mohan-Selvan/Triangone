@@ -6,6 +6,9 @@ public class GameSettings : Singleton<GameSettings>
     [SerializeField] private Color _blockHighlightColor = Color.white;
     [SerializeField] private Color _blockDefaultColor = Color.blue;
 
+    [SerializeField] private Color _wallSafeColor = Color.green;
+    [SerializeField] private Color _wallDangerColor = Color.red;
+
     [SerializeField] LayerMask blockLayerMask = default;
     [SerializeField] LayerMask ringLayerMask = default;
 
@@ -13,4 +16,6 @@ public class GameSettings : Singleton<GameSettings>
     public Color BlockDefaultColor { get => _blockDefaultColor; set => _blockDefaultColor = value; }
     public LayerMask BlockLayerMask { get => blockLayerMask; set => blockLayerMask = value; }
     public LayerMask RingLayerMask { get => ringLayerMask; set => ringLayerMask = value; }
+    public Color WallSafeColor { get => _wallSafeColor; set => _wallSafeColor = value; }
+    public Color WallDangerColor { get => _wallDangerColor; set => _wallDangerColor = value; }
 }

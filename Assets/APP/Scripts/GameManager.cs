@@ -9,13 +9,23 @@ public enum GameState
     STARTING,
     RUNNING, 
     PAUSED,
+    ENDING,
     ENDED
 }
 
 public class GameManager : MonoBehaviour
 {
     [Header("References")]
-    [SerializeField] PointField levelHandler = null;
+    [SerializeField] PointField pointField = null;
+    [SerializeField] RingHandler ringHandler = null;
+
+    [Header("Settigs - Input")]
+    [SerializeField] KeyCode drawLevelKey = KeyCode.Alpha0;
+    [SerializeField] KeyCode updateScaleKey = KeyCode.Alpha9;
+
+    [Header("Debug only")]
+    [SerializeField] bool continuousRefresh = false;
+
 
     [Header("Testing only")]
     [SerializeField] GameState currentGameState = default;
@@ -27,6 +37,22 @@ public class GameManager : MonoBehaviour
 
     //EVENTS
     public event System.Action<GameState> OnGameStateChanged = null;
+
+
+    private void Update()
+    {
+        if (Input.GetKeyDown(drawLevelKey))
+        {
+            Debug.Log($"{nameof(GameManager)} : {nameof(StartGame)}");
+            StartGame();
+        }
+
+        if (Input.GetKeyDown(updateScaleKey) || continuousRefresh)
+        {
+            Debug.Log($"{nameof(PointField)} : {nameof(pointField.UpdateScale)}");
+            pointField.UpdateScale();
+        }
+    }
 
     internal void SwitchGameState(GameState targetGameState)
     {
@@ -51,6 +77,10 @@ public class GameManager : MonoBehaviour
                 break;
 
             case GameState.PAUSED:
+
+                break;
+
+            case GameState.ENDING:
 
                 break;
 
@@ -93,8 +123,7 @@ public class GameManager : MonoBehaviour
 
     public void EndGame()
     {
-        Debug.Log("Ending game..");
-        GameWorld.Instance.SceneLoader.GetSceneLoadOperation(Constants.SCENE_HOME);
+        StartCoroutine(EndGame_Routine());
     }
 
     public void HandleLevelComplete()
@@ -108,41 +137,59 @@ public class GameManager : MonoBehaviour
 
         Debug.Log("Level complete");
 
-        //TODO :: Remove
-
-        GameWorld gameWorld = GameWorld.Instance;
-
-        string sceneName = Constants.SCENE_HOME;
-
-        gameWorld.TaskLoader.StartLoadTask(new LoadAsyncOperation()
-        {
-            Operation = () => { return gameWorld.SceneLoader.GetSceneLoadOperation(sceneName); },
-            HeadingMessage = "Loading...",
-            OnLoadFailedCallback = () => { Debug.Log("Scene load failed!"); },
-            OnLoadSuccessCallback = () => {
-                Debug.Log("Scene load complete!");
-                gameWorld.GameManager.StartGame();
-            }
-        });
+        StartGame();
     }
 
     public IEnumerator StartGame_Routine()
     {
-        if (levelHandler == null)
+        Debug.Log($"{nameof(StartGame_Routine)} : Start");
+
+        if (pointField == null)
         {
-            levelHandler = FindObjectOfType<PointField>();
+            pointField = FindObjectOfType<PointField>();
         }
 
-        if (levelHandler == null)
+        if (pointField == null)
         {
             Debug.LogError($"{nameof(PointField)} not present in scene!");
             yield break;
         }
 
+        if (ringHandler == null)
+        {
+            ringHandler = FindObjectOfType<RingHandler>();
+        }
+
+        if (ringHandler == null)
+        {
+            Debug.LogError($"{nameof(RingHandler)} not present in scene!");
+            yield break;
+        }
+
         SwitchGameState(GameState.STARTING);
 
-        yield return levelHandler.DrawLevel_Routine();
+        ringHandler.Initialize();
+        ringHandler.SetWallSafeState_All(isSafe: true, animate: true);
+
+        yield return pointField.DrawLevel_Routine();
 
         SwitchGameState(GameState.RUNNING);
+
+        Debug.Log($"{nameof(StartGame_Routine)} : Complete");
+    }
+
+    public IEnumerator EndGame_Routine()
+    {
+        Debug.Log($"{nameof(EndGame_Routine)} : Start");
+
+        SwitchGameState(GameState.ENDING);
+
+        yield return new WaitForSeconds(4f);
+
+        GameWorld.Instance.SceneLoader.TryLoadScene(Constants.SCENE_HOME);
+
+        SwitchGameState(GameState.ENDED);
+
+        Debug.Log($"{nameof(EndGame_Routine)} : Complete");
     }
 }

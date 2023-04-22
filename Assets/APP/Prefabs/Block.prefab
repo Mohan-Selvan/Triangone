@@ -45,6 +45,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 577b129e02fa5f346acbc8bdc7b0e84b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  rb: {fileID: 7168257379129549175}
   triangle:
     vertices: []
   meshFilter: {fileID: 8509866171412413467}
