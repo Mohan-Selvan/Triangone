@@ -82,6 +82,10 @@ public class SelectionManager : MonoBehaviour
                     {
                         offset = Helpers.GetWorldMousePosition(Input.mousePosition, mainCamera) - currentSelectedBlock.transform.position;
                     }
+                    else
+                    {
+                        DeselectCurrentBlock();
+                    }
                 }
                 else
                 {
@@ -158,12 +162,34 @@ public class SelectionManager : MonoBehaviour
 
         blocksMap.Remove(block.BlockID);
 
-        if(blocksMap.Count == 0)
+        LockRandomBlocks();
+
+        if (blocksMap.Count == 0)
         {
             GameWorld.Instance.GameManager.HandleLevelComplete();
+            return;
         }
 
         ringHandler.RandomizeWallSafeStates(numberOfUnsafeWalls: (ringHandler.WallCount / 2));
+    }
+
+    private void LockRandomBlocks()
+    {
+        DeselectCurrentBlock();
+
+        List<int> blockIDs = blocksMap.Keys.ToList();
+        Helpers.ShuffleList<int>(ref blockIDs);
+
+        int totalCount = blocksMap.Count;
+
+        float maxPercent = 0.2f;
+        int lockCount = Mathf.FloorToInt(blocksMap.Count * maxPercent);
+
+        for(int i = 0; i < totalCount; i++)
+        {
+            bool shouldLock = (i + 1) <= lockCount;
+            blocksMap[blockIDs[i]].LockBlock(value: shouldLock, animate: true);
+        }
     }
 
     private void HandleGameOver(Block currentBlock)
@@ -217,6 +243,13 @@ public class SelectionManager : MonoBehaviour
         }
 
         Block targetBlock = blocksMap[blockID];
+        
+        if(targetBlock.IsLocked)
+        {
+            //TODO :: Handle sound here
+            return false;
+        }
+
         targetBlock.HandleSelectionStateChanged(isSelected: true);
         currentSelectedBlock = targetBlock;
 

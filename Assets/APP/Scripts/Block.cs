@@ -19,11 +19,15 @@ public class Block : MonoBehaviour
 
     [Header("Testing only")]
     [SerializeField] int blockID = 0;
+    [SerializeField] bool isLocked = false;
+
+    [Space(10)]
     [SerializeField] Mesh mesh = null;
     [SerializeField] private MeshRenderer _meshRenderer = null;
 
     //Properties
     public int BlockID { get => blockID; set => blockID = value; }
+    public bool IsLocked { get => isLocked; set => isLocked = value; }
 
     private void Awake()
     {
@@ -70,6 +74,9 @@ public class Block : MonoBehaviour
         //this.areaText.text = $"{triangle.GetArea()}";
 
         _meshRenderer.material.SetColor("_BaseColor", GameSettings.Instance.BlockDefaultColor);
+
+        //Unlocking initially.
+        LockBlock(value: false, animate: true);
 
         containerTransform.gameObject.SetActive(false);
     }
@@ -159,6 +166,54 @@ public class Block : MonoBehaviour
             //If animation is not required.
             _meshRenderer.material.color = Utils.GetColorWithAlpha(_meshRenderer.material.color, 1f);
             this.containerTransform.gameObject.SetActive(value);
+        }
+    }
+
+    public void LockBlock(bool value, bool animate, float delay = 0f)
+    {
+        //Setting lock value
+        isLocked = value;
+
+        //If animation is required.
+        Color currentColor = _meshRenderer.material.color;
+
+        Color fromColor = Utils.GetColorWithAlpha(currentColor, 1.0f);
+        Color toColor = GameSettings.Instance.BlockLockedColor;
+
+        if (!value)
+        {
+            fromColor = Utils.GetColorWithAlpha(currentColor, 1.0f);
+            toColor = GameSettings.Instance.BlockDefaultColor;
+        }
+
+        if (animate)
+        {
+            TweenBase tween = Tween.ShaderColor(_meshRenderer.material, "_BaseColor", startValue: fromColor,
+                endValue: toColor,
+                duration: 0.15f,
+                delay: delay,
+                easeCurve: Tween.EaseInOut,
+                startCallback: () =>
+                {
+                    _meshRenderer.material.color = fromColor;
+                },
+
+                completeCallback: () =>
+                {
+                    try
+                    {
+                        _meshRenderer.material.color = toColor;
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.LogError($"Exception on tween callback : {e}");
+                    }
+
+                });
+        }
+        else
+        {
+            _meshRenderer.material.color = toColor;
         }
     }
 

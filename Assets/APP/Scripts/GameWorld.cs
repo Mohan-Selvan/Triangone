@@ -16,4 +16,9 @@ public class GameWorld : Singleton<GameWorld>
     public TaskLoader TaskLoader { get => taskLoader; }
     public GameManager GameManager { get => gameManager; }
     public UIManager UIManager { get => uiManager; }
+
+    private void Start()
+    {
+        Application.targetFrameRate = 60;
+    }
 }

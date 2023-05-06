@@ -54,4 +54,24 @@ public static class Helpers
             }
         }
     }
+
+    public static void ShuffleList<T>(ref List<T> list, int shuffleCount = -1)
+    {
+        if(shuffleCount < 0)
+        {
+            shuffleCount = Mathf.FloorToInt(list.Count / 2);
+        }
+
+        //Shuffling randomized walls
+        for (int i = 0; i < list.Count; i++)
+        {
+            int randomIndex = Random.Range(0, list.Count);
+
+            if (randomIndex == i) { continue; }
+
+            T temp = list[i];
+            list[i] = list[randomIndex];
+            list[randomIndex] = temp;
+        }
+    }
 }
