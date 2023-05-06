@@ -75,9 +75,6 @@ public class Block : MonoBehaviour
 
         _meshRenderer.material.SetColor("_BaseColor", GameSettings.Instance.BlockDefaultColor);
 
-        //Unlocking initially.
-        LockBlock(value: false, animate: true);
-
         containerTransform.gameObject.SetActive(false);
     }
 

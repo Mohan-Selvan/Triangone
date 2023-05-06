@@ -10,6 +10,7 @@ public class SelectionManager : MonoBehaviour
     [SerializeField] RingHandler ringHandler = null;
 
     [Header("Settings")]
+    [SerializeField] float blockMaxMoveSpeed = 100f;
     [SerializeField] Vector2 knockForceRange = Vector2.up;
 
     [Header("Debug only")]
@@ -62,7 +63,8 @@ public class SelectionManager : MonoBehaviour
     {
         if((!enableUpdate) || (gameManager.CurrentGameState != GameState.RUNNING)) { return; }
 
-        if(Input.GetMouseButtonDown(0))
+        // Is trying to select
+        if (Input.GetMouseButtonDown(0)) 
         {
             Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
 
@@ -98,13 +100,16 @@ public class SelectionManager : MonoBehaviour
                 DeselectCurrentBlock();
             }
         }
-        else if(Input.GetMouseButton(0))
+        else if(Input.GetMouseButton(0)) //User holding a block
         {
             if(currentSelectedBlock != null)
             {
                 Vector3 worldMousePosition = Helpers.GetWorldMousePosition(Input.mousePosition, mainCamera);
 
-                currentSelectedBlock.transform.position = worldMousePosition - offset;
+                Vector3 currentPosition = currentSelectedBlock.transform.position;
+                Vector3 targetPosition = worldMousePosition - offset;
+
+                currentSelectedBlock.transform.position = Vector3.Lerp(currentPosition, targetPosition, blockMaxMoveSpeed * Time.deltaTime);
             }
         }
 

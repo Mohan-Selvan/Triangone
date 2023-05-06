@@ -86,6 +86,12 @@ public class PointField : MonoBehaviour
             blocks.Add(block);
         }
 
+        // Unlocking initially
+        for (int i = 0; i < blocks.Count; i++)
+        {
+            blocks[i].LockBlock(value: false, animate: false);
+        }
+
         for (int i = 0; i < blocks.Count; i++)
         {
             blocks[i].EnableBlock(value: true, animate: true, delay: Random.Range(0.1f, 1f));
