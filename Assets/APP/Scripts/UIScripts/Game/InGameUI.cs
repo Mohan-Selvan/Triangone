@@ -28,7 +28,7 @@ public class InGameUI : MonoBehaviour
         //Local function
         void QuitGame()
         {
-            GameManager.EndGame();
+            //GameManager.EndGame();
         }
 
         //Disabling settings menu
@@ -61,13 +61,13 @@ public class InGameUI : MonoBehaviour
 
     private void HandlePauseButtonClicked()
     {
-        GameManager.PauseGame();
+        //GameManager.PauseGame();
         EnableSettingsOverlay(true);
     }
 
     private void HandleResumeButtonClicked()
     {
-        GameManager.ResumeGame();
+        //GameManager.ResumeGame();
         EnableSettingsOverlay(false);
     }
 

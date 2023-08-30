@@ -224,7 +224,7 @@ public class Block : MonoBehaviour
         return (collisions);
     }
 
-    internal void HandleBlockTouchedRing()
+    internal void HandleBlockCleared()
     {
         Debug.Log($"Removing block : {blockID}");
         EnableBlock(value: false, animate: true);

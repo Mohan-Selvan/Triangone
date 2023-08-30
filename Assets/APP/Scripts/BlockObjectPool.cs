@@ -16,12 +16,7 @@ public class BlockObjectPool : MonoBehaviour
     //Privates
     private Stack<Block> _blockStack = null;
 
-    private void Start()
-    {
-        Initialize();
-    }
-
-    private void Initialize()
+    internal void Initialize()
     {
         _blockStack = new Stack<Block>();
 
@@ -29,6 +24,11 @@ public class BlockObjectPool : MonoBehaviour
         {
             CreateAndAddBlock();
         }
+    }
+
+    internal void Deinitialize()
+    {
+
     }
 
     private void CreateAndAddBlock()

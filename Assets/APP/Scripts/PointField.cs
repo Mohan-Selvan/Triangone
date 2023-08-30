@@ -99,8 +99,8 @@ public class PointField : MonoBehaviour
 
         yield return new WaitForSeconds(2f);
 
-        selectionManager.Initialize(blocks);
-        selectionManager.DeselectAllBlocks();
+        //selectionManager.Initialize(blocks);
+        //selectionManager.DeselectAllBlocks();
     }
 
     public void UpdateScale()

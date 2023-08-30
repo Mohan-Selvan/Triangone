@@ -29,6 +29,11 @@ public class RingHandler : MonoBehaviour
         }
     }
 
+    internal void Deinitialize()
+    {
+
+    }
+
     public int WallCount => walls.Count;
 
     private void SetupRing()

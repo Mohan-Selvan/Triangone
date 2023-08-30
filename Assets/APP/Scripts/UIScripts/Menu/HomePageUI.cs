@@ -23,7 +23,7 @@ public class HomePageUI : MonoBehaviour
                 OnLoadFailedCallback = () => { Debug.Log("Scene load failed!"); },
                 OnLoadSuccessCallback = () => { 
                     Debug.Log("Scene load complete!");
-                    gameWorld.GameManager.StartGame();
+                    GameWorld.Instance.GameManager.StartGame();
                 }
             });
         });

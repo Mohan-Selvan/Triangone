@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -11,10 +10,9 @@ public class SelectionManager : MonoBehaviour
 
     [Header("Settings")]
     [SerializeField] float blockMaxMoveSpeed = 100f;
-    [SerializeField] Vector2 knockForceRange = Vector2.up;
 
     [Header("Debug only")]
-    [SerializeField] bool enableUpdate = true;
+    [SerializeField] bool enableUpdate = false;
 
     [Header("Testing only")]
     [SerializeField] Block currentSelectedBlock = null;
@@ -25,43 +23,32 @@ public class SelectionManager : MonoBehaviour
     //Trackers
     Collider2D[] colliders = default;
 
-    //Collections
-    Dictionary<int, Block> blocksMap = null;
+    System.Action<Block> OnBlockCleared = null;
+    System.Action<Block> OnBlockBroken = null;
 
-    //Helpers
-    GameManager gameManager => GameWorld.Instance.GameManager;
-
-    private void Start()
+    public void Initialize(System.Action<Block> onBlockCleared, System.Action<Block> onBlockBroken)
     {
         mainCamera = Camera.main;
 
-        colliders = new Collider2D[5];
-        blocksMap = new Dictionary<int, Block>();
+        colliders = new Collider2D[2];
 
-        gameManager.OnGameStateChanged += GameManager_OnGameStateChanged;
+        this.OnBlockCleared = onBlockCleared;
+        this.OnBlockBroken = onBlockBroken;
     }
 
-    private void OnDestroy()
+    internal void Deinitialize()
     {
-        gameManager.OnGameStateChanged -= GameManager_OnGameStateChanged;
+
     }
 
-    private void GameManager_OnGameStateChanged(GameState newState)
+    internal void EnableSelection(bool value)
     {
-        if(newState == GameState.RUNNING)
-        {
-            enableUpdate = true;
-        }
-
-        if(newState == GameState.PAUSED || newState == GameState.ENDING)
-        {
-            DeselectCurrentBlock();
-        }
+        enableUpdate = value;
     }
 
     private void Update()
     {
-        if((!enableUpdate) || (gameManager.CurrentGameState != GameState.RUNNING)) { return; }
+        if((!enableUpdate)) { return; }
 
         // Is trying to select
         if (Input.GetMouseButtonDown(0)) 
@@ -80,7 +67,7 @@ public class SelectionManager : MonoBehaviour
                 {
                     Debug.Log($"Selecting Block : {block.BlockID}!");
 
-                    if(TrySelectBlock(block.BlockID))
+                    if(TrySelectBlock(block))
                     {
                         offset = Helpers.GetWorldMousePosition(Input.mousePosition, mainCamera) - currentSelectedBlock.transform.position;
                     }
@@ -122,8 +109,7 @@ public class SelectionManager : MonoBehaviour
                 // Game over
                 Block b = currentSelectedBlock;
                 DeselectCurrentBlock();
-                HandleGameOver(b);
-
+                OnBlockBroken?.Invoke(b);
                 return;
             }
 
@@ -137,14 +123,15 @@ public class SelectionManager : MonoBehaviour
                     {
                         Block b = currentSelectedBlock;
                         DeselectCurrentBlock();
-                        HandleBlockTouchedRing(b);
+
+                        this.OnBlockCleared?.Invoke(b);
                     }
                     else
                     {
                         // Game over
                         Block b = currentSelectedBlock;
                         DeselectCurrentBlock();
-                        HandleGameOver(b);
+                        OnBlockBroken?.Invoke(b);
 
                         return;
                     }
@@ -153,101 +140,15 @@ public class SelectionManager : MonoBehaviour
         }
     }
 
-    public void Initialize(List<Block> blocks)
-    {
-        blocksMap = blocks.ToDictionary((x) =>
-        {
-            return x.BlockID;
-        });
-    }
-
-    private void HandleBlockTouchedRing(Block block)
-    {
-        block.HandleBlockTouchedRing();
-
-        blocksMap.Remove(block.BlockID);
-
-        LockRandomBlocks();
-
-        if (blocksMap.Count == 0)
-        {
-            GameWorld.Instance.GameManager.HandleLevelComplete();
-            return;
-        }
-
-        ringHandler.RandomizeWallSafeStates(numberOfUnsafeWalls: (ringHandler.WallCount / 2));
-    }
-
-    private void LockRandomBlocks()
-    {
-        DeselectCurrentBlock();
-
-        List<int> blockIDs = blocksMap.Keys.ToList();
-        Helpers.ShuffleList<int>(ref blockIDs);
-
-        int totalCount = blocksMap.Count;
-
-        float maxPercent = 0.2f;
-        int lockCount = Mathf.FloorToInt(blocksMap.Count * maxPercent);
-
-        for(int i = 0; i < totalCount; i++)
-        {
-            bool shouldLock = (i + 1) <= lockCount;
-            blocksMap[blockIDs[i]].LockBlock(value: shouldLock, animate: true);
-        }
-    }
-
-    private void HandleGameOver(Block currentBlock)
-    {
-        //Game over
-        Debug.LogError("Game over!!");
-
-        enableUpdate = false;
-
-        foreach(Block b in blocksMap.Values)
-        {
-            if(b == currentBlock) { continue; }
-
-            //Calculating knock range
-            float maxDistance = 10f;
-
-            Vector2 direction = (b.transform.position - currentBlock.transform.position).normalized;
-            float distance = Mathf.Clamp(Vector2.Distance(b.transform.position, currentBlock.transform.position), 0f, maxDistance);
-
-            float t = Mathf.InverseLerp(0, maxDistance, distance);
-            float knockMagnitude = Mathf.Lerp(knockForceRange.x, knockForceRange.y, 1f - t);
-
-            Rigidbody2D rb = b.GetRigidBody();
-
-            //Unlocking rigidbody
-            rb.velocity = Vector2.zero;
-            rb.constraints = RigidbodyConstraints2D.FreezeRotation;
-            rb.bodyType = RigidbodyType2D.Dynamic;
-
-            rb.AddForce(direction * knockMagnitude);
-        }
-
-        //Ending game
-        gameManager.EndGame();
-    }
-
     #region Selection
 
-    public bool TrySelectBlock(int blockID)
+    public bool TrySelectBlock(Block targetBlock)
     {
         if (currentSelectedBlock != null)
         {
             currentSelectedBlock.HandleSelectionStateChanged(isSelected: false);
             currentSelectedBlock = null;
         }
-
-        if (!blocksMap.ContainsKey(blockID))
-        {
-            Debug.LogError($"Block with ID ({blockID}) not found");
-            return false;
-        }
-
-        Block targetBlock = blocksMap[blockID];
         
         if(targetBlock.IsLocked)
         {
@@ -267,14 +168,6 @@ public class SelectionManager : MonoBehaviour
         {
             currentSelectedBlock.HandleSelectionStateChanged(isSelected: false);
             currentSelectedBlock = null;
-        }
-    }
-
-    public void DeselectAllBlocks()
-    {
-        foreach(var kvp in blocksMap)
-        {
-            kvp.Value.HandleSelectionStateChanged(isSelected: false);
         }
     }
 
