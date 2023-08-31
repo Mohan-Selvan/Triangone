@@ -25,6 +25,9 @@ public class Block : MonoBehaviour
     [SerializeField] Mesh mesh = null;
     [SerializeField] private MeshRenderer _meshRenderer = null;
 
+    private Color _blockDefaultColor = default;
+    private Color _blockLockedColor = default;
+
     //Properties
     public int BlockID { get => blockID; set => blockID = value; }
     public bool IsLocked { get => isLocked; set => isLocked = value; }
@@ -70,10 +73,21 @@ public class Block : MonoBehaviour
             a, b, c
         };
 
-        //Updating area to UI.
-        //this.areaText.text = $"{triangle.GetArea()}";
+        //Initializing color
+        //Color randomColor = UnityEngine.Random.ColorHSV(
+        //    0f, 1f,
+        //    0f, 1f,
+        //    0f, 1f,
+        //    1f, 1f);
 
-        _meshRenderer.material.SetColor("_BaseColor", GameSettings.Instance.BlockDefaultColor);
+        //_blockDefaultColor = randomColor;
+        //_blockLockedColor = new Color(randomColor.r, randomColor.g, randomColor.b, 0.5f);
+
+        _blockDefaultColor = GameSettings.Instance.BlockDefaultColor;
+        _blockLockedColor = GameSettings.Instance.BlockLockedColor;
+
+        //Setting color to block here
+        _meshRenderer.material.SetColor("_BaseColor", _blockDefaultColor);
 
         containerTransform.gameObject.SetActive(false);
     }
@@ -175,12 +189,12 @@ public class Block : MonoBehaviour
         Color currentColor = _meshRenderer.material.color;
 
         Color fromColor = Utils.GetColorWithAlpha(currentColor, 1.0f);
-        Color toColor = GameSettings.Instance.BlockLockedColor;
+        Color toColor = _blockLockedColor;
 
         if (!value)
         {
             fromColor = Utils.GetColorWithAlpha(currentColor, 1.0f);
-            toColor = GameSettings.Instance.BlockDefaultColor;
+            toColor = _blockDefaultColor;
         }
 
         if (animate)
@@ -234,7 +248,7 @@ public class Block : MonoBehaviour
 
     public void HandleSelectionStateChanged(bool isSelected)
     {
-        Color targetColor = isSelected ? GameSettings.Instance.BlockHighlightColor : GameSettings.Instance.BlockDefaultColor;
+        Color targetColor = isSelected ? GameSettings.Instance.BlockHighlightColor : _blockDefaultColor;
         _meshRenderer.material.SetColor("_BaseColor", targetColor);
     }
 
@@ -243,5 +257,10 @@ public class Block : MonoBehaviour
     public Rigidbody2D GetRigidBody()
     {
         return rb;
+    }
+
+    public Mesh GetMesh()
+    {
+        return meshFilter.mesh;
     }
 }

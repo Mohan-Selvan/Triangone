@@ -1,19 +1,28 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security;
 using UnityEngine;
-using UnityEngine.Rendering;
 
 public class GameModeSimple : GameModeBase
 {
     public override string GameMode_PrettyName => "Game mode simple";
 
     [Header("References")]
-    [SerializeField] PointFieldGenerator pointFieldGenerator = null;
     [SerializeField] LevelGenerator levelGenerator = null;
     [SerializeField] RingHandler ringHandler = null;
     [SerializeField] SelectionManager selectionManager = null;
+
+    [Header("Visual effects")]
+    [SerializeField] FXHandler fxHandler = null;
+
+    [Header("Level settings")]
+    [SerializeField] bool loadFromFile = false;
+
+    [Header("Level settings")]
+    [SerializeField] PointFieldGenerator pointFieldGenerator = null;
+
+    [Space(10)]
+    [SerializeField] string filePath = string.Empty;
 
     [Header("Settings")]
     [SerializeField] Vector2 knockForceRange = Vector2.up;
@@ -29,6 +38,7 @@ public class GameModeSimple : GameModeBase
 
         ringHandler.Initialize();
         levelGenerator.Initialize();
+        fxHandler.Initialize();
 
         //Initializing Selection manager
         selectionManager.Initialize(HandleBlockCleared, HandleBlockBroken);
@@ -55,11 +65,20 @@ public class GameModeSimple : GameModeBase
             blocks.Clear();
         }
 
-        //Generating points from point field
-        List<Point> points = pointFieldGenerator.GetPoints();
+        if (loadFromFile)
+        {
+            LevelData levelData = LevelDataLoader.LoadLevelFromFile(filePath);
+            blocks = levelGenerator.GenerateLevel(levelData);
+        }
+        else
+        {
+            //Generating points from point field
+            List<Point> points = pointFieldGenerator.GetPoints();
 
-        //Generate a new level
-        blocks = levelGenerator.GenerateLevel(points);
+            //Generate a new level
+            blocks = levelGenerator.GenerateLevel(points);
+        }
+
 
         blocksMap = new Dictionary<int, Block>();
         blocksMap = blocks.ToDictionary((x) =>
@@ -89,6 +108,8 @@ public class GameModeSimple : GameModeBase
     {
         block.HandleBlockCleared();
 
+        fxHandler.HandleBlockCleared(block);
+
         blocksMap.Remove(block.BlockID);
 
         if(blocksMap.Count > 3)
@@ -109,8 +130,10 @@ public class GameModeSimple : GameModeBase
         ringHandler.RandomizeWallSafeStates(numberOfUnsafeWalls: (ringHandler.WallCount / 2));
     }
 
-    private void HandleBlockBroken(Block currentBlock)
+    private void HandleBlockBroken(Block block)
     {
+        fxHandler.HandleBlockBroken(block);
+
         //Game over
         Debug.LogError("Game over!!");
 
@@ -118,13 +141,13 @@ public class GameModeSimple : GameModeBase
 
         foreach (Block b in blocksMap.Values)
         {
-            if (b == currentBlock) { continue; }
+            if (b == block) { continue; }
 
             //Calculating knock range
             float maxDistance = 10f;
 
-            Vector2 direction = (b.transform.position - currentBlock.transform.position).normalized;
-            float distance = Mathf.Clamp(Vector2.Distance(b.transform.position, currentBlock.transform.position), 0f, maxDistance);
+            Vector2 direction = (b.transform.position - block.transform.position).normalized;
+            float distance = Mathf.Clamp(Vector2.Distance(b.transform.position, block.transform.position), 0f, maxDistance);
 
             float t = Mathf.InverseLerp(0, maxDistance, distance);
             float knockMagnitude = Mathf.Lerp(knockForceRange.x, knockForceRange.y, 1f - t);
