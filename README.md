@@ -14,4 +14,4 @@ Following image shows a snapshot of the gameplay.
 
 ## Technical Details
 
-The levels are generated using Delunay Triangulation method. The complexity and difficulty of the level  can be adjusted by modifying the level generation parameters.
+The levels are generated using Delaunay Triangulation method. The complexity and difficulty of the level  can be adjusted by modifying the level generation parameters.
